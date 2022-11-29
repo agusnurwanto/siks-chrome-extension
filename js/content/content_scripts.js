@@ -9,6 +9,7 @@ function injectScript(file, node) {
 }
 injectScript( chrome.runtime.getURL('/content_message.js'), 'html');
 injectScript( chrome.runtime.getURL('/config.js'), 'html');
+injectScript( chrome.runtime.getURL('/js/jquery.min.js'), 'html');
 injectScript( chrome.runtime.getURL('/js/content/content_inject.js'), 'html');
 window.data_temp_onmessage = {};
 
