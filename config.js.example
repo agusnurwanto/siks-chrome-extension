@@ -1,0 +1,7 @@
+var config = {
+	siks_url : "https://siks.kemensos.go.id/", // alamat aplikasi siks
+	user : "xxx", // username akun https://siks.kemensos.go.id/
+	password : "xxx", // password akun https://siks.kemensos.go.id/
+	url_server_lokal : "https://xxxxx.com/wp-admin/admin-ajax.php", // url server lokal
+	api_key : "xxxxxxxx", // api key server lokal
+};
