@@ -125,3 +125,41 @@ function intervalSession(no){
 		});
 	}
 }
+
+function get_token(){
+	_token = false;
+	for(var i in localStorage){ 
+	    var item = localStorage.getItem(i);
+	    if(item){
+	        item = JSON.parse(item);
+	        if(item.authReducer){
+		        item = JSON.parse(item.authReducer);
+		        _token = 'Bearer '+item.token;
+	        }
+	    }
+	}
+	console.log('_token', _token);
+}
+
+function send_token_lokal() {
+	show_loading();
+	pesan_loading('SEND TOKEN TO LOKAL', true);
+	var data = {
+	    message:{
+	        type: "get-url",
+	        content: {
+			    url: config.url_server_lokal,
+			    type: 'post',
+			    data: { 
+					action: 'set_token',
+					token: _token,
+					api_key: config.api_key
+				},
+    			return: true
+			}
+	    }
+	};
+	chrome.runtime.sendMessage(data, function(response) {
+	    console.log('responeMessage', response);
+	});
+}

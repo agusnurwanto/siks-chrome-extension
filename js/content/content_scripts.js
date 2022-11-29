@@ -1,9 +1,13 @@
 // console.log('run content_script.js');
 
-function injectScript(file, node) {
+function injectScript(file, node, _type) {
     var th = document.getElementsByTagName(node)[0];
     var s = document.createElement('script');
-    s.setAttribute('type', 'text/javascript');
+    if(_type){
+    	s.setAttribute('type', _type);
+    }else{
+    	s.setAttribute('type', 'text/javascript');
+    }
     s.setAttribute('src', file);
     th.insertBefore(s, th.firstChild);
 }
@@ -30,9 +34,8 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 		var res = request.data;
 		var _alert = true;
 		var cek_hide_loading = true;
-		if(res.action == 'get_data'){
+		if(res.action == 'set_captcha'){
 			_alert = false;
-			cek_hide_loading = false;
 		}
 		if(cek_hide_loading){
 			hide_loading();
