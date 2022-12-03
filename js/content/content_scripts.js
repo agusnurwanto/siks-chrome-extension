@@ -36,6 +36,32 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 		var cek_hide_loading = true;
 		if(res.action == 'set_captcha'){
 			_alert = false;
+		}else if(request.url.indexOf('user/get-captcha') != -1){
+			_alert = false;
+			var captcha = JSON.parse(de(res));
+			var data = {
+			    message:{
+			        type: "get-url",
+			        content: {
+					    url: config.url_server_lokal,
+					    type: 'post',
+					    data: { 
+							action: 'set_captcha',
+							captcha: captcha.data.img,
+							key: captcha.data.key,
+							api_key: config.api_key
+						},
+		    			return: true
+					}
+			    }
+			};
+			chrome.runtime.sendMessage(data, function(response) {
+			    console.log('responeMessage', response);
+			});
+		}else if(request.url.indexOf('user/login') != -1){
+			_alert = false;
+			pesan_loading('Berhasil login!', true);
+			// send to lokal
 		}
 		if(cek_hide_loading){
 			hide_loading();

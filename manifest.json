@@ -23,6 +23,7 @@
 			],
 			"js": [
 				"config.js",
+				"js/crypto-js.min.js",
 				"js/jquery.min.js",
 				"js/select2.min.js",
 				"js/pusher.min.js",

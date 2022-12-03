@@ -4,11 +4,10 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 	console.log('request', request);
 	var type = request.message.type;
 	if(type == 'get-url'){
-		relayAjax({
+		var _opsi = {
 		    url: request.message.content.url,
 		    type: request.message.content.type,
 		    data: request.message.content.data,
-		    dataType: 'json',
 		    success:function(ret){
 		    	if(request.message.content.return){
 		    		// jika continue tidak kosong maka data akan dikirim secara terpisah agar terhindar dari limit makasimal
@@ -40,6 +39,7 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 		    		}else{
 				     	var options = {
 				     		type: 'response-fecth-url',
+				     		url: request.message.content.url,
 				     		data: ret,
 				     		tab: sender.tab
 				     	}
@@ -55,7 +55,10 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 		    error:function(){
 		        console.log("Error AJAX");
 		    }      
-		});
+		};
+		relayAjax(_opsi);
+	}else if(type == "set_captcha"){
+		_captcha = request.message.content.captcha
 	}
 	return sendResponse("THANKS from background!");
 });

@@ -63,7 +63,7 @@ function timeoutAjax(ms, promise) {
 }
 
 function relayAjax(options, retries=20, delay=10000, timeout=9000000){
-    timeoutAjax(timeout, postData(options.url, options.data))
+    timeoutAjax(timeout, postData(options.url, options.data, options.type))
     .then(data => {
         options.success(data);
     })
@@ -82,7 +82,7 @@ function relayAjax(options, retries=20, delay=10000, timeout=9000000){
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-function postData(url = '', data = {}) {
+function postData(url = '', data = {}, _type = 'POST') {
     var formdata = new FormData();
     for(var i in data){
         if(typeof data[i] == 'string'){
@@ -93,7 +93,7 @@ function postData(url = '', data = {}) {
         formdata.append(i, val);
     }
     var parameter = {
-        method: 'POST',
+        method: _type,
         mode: 'no-cors',
         cache: 'no-cache',
         credentials: 'include',
@@ -101,6 +101,9 @@ function postData(url = '', data = {}) {
         referrerPolicy: 'strict-origin-when-cross-origin',
         body: formdata
     };
+    if(_type == 'get' || _type == 'GET'){
+        delete parameter.body;
+    }
 
     return fetch(url, parameter)
     .then(response => {
@@ -109,4 +112,35 @@ function postData(url = '', data = {}) {
     .then((data) => {
         return (data ? JSON.parse(data) : {});
     });
+}
+
+function en(e){
+    var t=CryptoJS.lib.WordArray.random(16),
+    r=CryptoJS.enc.Base64.parse(config.key_encrypt),
+    u={
+        iv:t,
+        mode:CryptoJS.mode.CBC,
+        padding:CryptoJS.pad.Pkcs7
+    },
+    a=CryptoJS.AES.encrypt(e,r,u);
+    a=a.toString();
+    var n={
+        iv:t=CryptoJS.enc.Base64.stringify(t),
+        value:a,
+        mac:CryptoJS.HmacSHA256(t+a,r).toString()
+    };
+    return n=JSON.stringify(n),
+    n=CryptoJS.enc.Utf8.parse(n),
+    CryptoJS.enc.Base64.stringify(n);
+}
+
+function de(e){
+    var t,
+    r=null===(t=config.key_encrypt)?void 0:t.toString(),
+    u=atob(e),
+    a=JSON.parse(u),
+    n=CryptoJS.enc.Base64.parse(a.iv),
+    c=a.value,
+    l=CryptoJS.enc.Base64.parse(r||"");
+    return CryptoJS.AES.decrypt(c,l,{iv:n}).toString(CryptoJS.enc.Utf8);
 }

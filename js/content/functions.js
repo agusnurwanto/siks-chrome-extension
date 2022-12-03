@@ -141,8 +141,10 @@ function get_token(){
 	console.log('_token', _token);
 }
 
-function send_token_lokal() {
-	show_loading();
+function send_token_lokal(hide_alert=false) {
+	if(!hide_alert){
+		show_loading();
+	}
 	pesan_loading('SEND TOKEN TO LOKAL', true);
 	var data = {
 	    message:{
@@ -159,7 +161,41 @@ function send_token_lokal() {
 			}
 	    }
 	};
+	if(hide_alert){
+		data.message.content.return = false;
+	}
 	chrome.runtime.sendMessage(data, function(response) {
 	    console.log('responeMessage', response);
 	});
+}
+
+function en(e){
+    var t=CryptoJS.lib.WordArray.random(16),
+    r=CryptoJS.enc.Base64.parse(config.key_encrypt),
+    u={
+        iv:t,
+        mode:CryptoJS.mode.CBC,
+        padding:CryptoJS.pad.Pkcs7
+    },
+    a=CryptoJS.AES.encrypt(e,r,u);
+    a=a.toString();
+    var n={
+        iv:t=CryptoJS.enc.Base64.stringify(t),
+        value:a,
+        mac:CryptoJS.HmacSHA256(t+a,r).toString()
+    };
+    return n=JSON.stringify(n),
+    n=CryptoJS.enc.Utf8.parse(n),
+    CryptoJS.enc.Base64.stringify(n);
+}
+
+function de(e){
+    var t,
+    r=null===(t=config.key_encrypt)?void 0:t.toString(),
+    u=atob(e),
+    a=JSON.parse(u),
+    n=CryptoJS.enc.Base64.parse(a.iv),
+    c=a.value,
+    l=CryptoJS.enc.Base64.parse(r||"");
+    return CryptoJS.AES.decrypt(c,l,{iv:n}).toString(CryptoJS.enc.Utf8);
 }
