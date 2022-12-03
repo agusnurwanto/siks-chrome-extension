@@ -43,6 +43,9 @@ channel.bind('my-event', function(data) {
 		chrome.runtime.sendMessage(data, function(response) {
 		    console.log('responeMessage', response);
 		});
+	}else if(data.action == 'send_otp'){
+		console.log(data);
+		pesan_loading('SUKSES GET OTP = '+data.otp, true);
 	}
 });
 
