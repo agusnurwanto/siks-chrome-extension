@@ -20,21 +20,38 @@ var channel = pusher.subscribe('my-channel');
 channel.bind('my-event', function(data) {
   	console.log('from pusher!', JSON.stringify(data));
 	if(data.action == 'require_login'){
-		localStorage.clear();
-		window.location = config.siks_url+'login';
+		if(config.otp){
+			sendOtp(config.otp);
+		}else{
+			pesan_loading('SEND CAPTCHA TO LOKAL', true);
+			var data = {
+			    message:{
+			        type: "get-url",
+			        content: {
+					    url: config.api_siks_url+'user/get-captcha',
+					    type: 'GET',
+		    			return: true
+					}
+			    }
+			};
+			chrome.runtime.sendMessage(data, function(response) {
+			    console.log('responeMessage', response);
+			});
+		}
 	}else if(data.action == 'login_captcha'){
+		var data_post = en(JSON.stringify({
+	    	email: config.user,
+	    	password: config.password,
+	    	captcha: data.captcha,
+	    	key: data.key
+	    }));
 		var data = {
 		    message:{
 		        type: "get-url",
 		        content: {
 				    url: config.api_siks_url+'user/login',
 				    type: 'post',
-				    data: {
-				    	email: config.user,
-				    	password: config.password,
-				    	captcha: data.captcha,
-				    	key: data.key
-				    },
+				    data: { data: data_post },
 	    			return: true
 				}
 		    }
@@ -46,27 +63,11 @@ channel.bind('my-event', function(data) {
 	}else if(data.action == 'send_otp'){
 		console.log(data);
 		pesan_loading('SUKSES GET OTP = '+data.otp, true);
+		sendOtp(data.otp);
 	}
 });
 
 var current_url = window.location.href;
-if(current_url.indexOf('/login') != -1){
-	pesan_loading('SEND CAPTCHA TO LOKAL', true);
-	var data = {
-	    message:{
-	        type: "get-url",
-	        content: {
-			    url: config.api_siks_url+'user/get-captcha',
-			    type: 'GET',
-    			return: true
-			}
-	    }
-	};
-	chrome.runtime.sendMessage(data, function(response) {
-	    console.log('responeMessage', response);
-	});
-}
-
 jQuery('.css-nb2z2f>.MuiTypography-root').after('<button id="update-lokal" style="padding: 7px 10px;">UPDATE TOKEN APLIKASI LOKAL</button>');
 jQuery('#update-lokal').on('click', function(e){
 	e.preventDefault();

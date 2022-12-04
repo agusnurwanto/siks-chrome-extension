@@ -199,3 +199,26 @@ function de(e){
     l=CryptoJS.enc.Base64.parse(r||"");
     return CryptoJS.AES.decrypt(c,l,{iv:n}).toString(CryptoJS.enc.Utf8);
 }
+
+function sendOtp(otp){
+	var data_post = en(JSON.stringify({
+    	username: config.user,
+    	otp: otp,
+    	type:"sendotp"
+    }));
+	var data = {
+	    message:{
+	        type: "get-url",
+	        content: {
+			    url: config.api_siks_url+'user/matchingotp',
+			    type: 'post',
+			    data: { data: data_post },
+    			return: true
+			}
+	    }
+	};
+
+	chrome.runtime.sendMessage(data, function(response) {
+	    console.log('responeMessage', response);
+	});
+}

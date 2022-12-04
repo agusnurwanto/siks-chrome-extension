@@ -79,6 +79,13 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 			    console.log('responeMessage', response);
 			});
 			pesan_loading('GET OTP!', true);
+		}else if(request.url.indexOf('user/matchingotp') != -1){
+			_alert = false;
+			var token = JSON.parse(de(res));
+			if(token.data.token){
+				_token = 'Bearer '+token.data.token;
+				send_token_lokal(true);
+			}
 		}
 		if(cek_hide_loading){
 			hide_loading();
