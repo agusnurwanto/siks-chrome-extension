@@ -172,6 +172,5 @@ jQuery('#konfirmasi-desa').on('click', '.data-kecamatan', function(){
 });
 jQuery('#konfirmasi-desa').on('click', '#backup-dtks', function(e){
 	e.preventDefault();
-	console.log('tes');
 	backup_data_dtks_all();
 });

@@ -315,7 +315,7 @@ function backup_data_dtks(page=0, per_page=300, options){
 				ret = JSON.parse(de(ret));
 				var data_all = [];
 		        var data_sementara = [];
-		        var max = 100;
+		        var max = per_page;
 		        ret.data.data.map(function(b, i){
 		            data_sementara.push(b);
 		            if(data_sementara.length%max == 0){
@@ -330,7 +330,12 @@ function backup_data_dtks(page=0, per_page=300, options){
 		        data_all.reduce(function(sequence, nextData){
 		            return sequence.then(function(current_data){
 		                return new Promise(function(resolve_reduce, reject_reduce){
-		                	console.log('kirim data ke lokal', current_data);
+		                	var current_data2 = {
+		                		meta: options,
+		                		page: page,
+		                		data: current_data
+		                	};
+		                	console.log('kirim data ke lokal', options, current_data);
 							var data = {
 							    message:{
 							        type: "get-url",
@@ -340,7 +345,7 @@ function backup_data_dtks(page=0, per_page=300, options){
 									    data: { 
 											action: 'singkronisasi_dtks',
 											api_key: config.api_key,
-											data: current_data
+											data: current_data2
 										},
 						    			return: false
 									}
