@@ -253,7 +253,7 @@ function backup_data_dtks_all(){
 		selected.reduce(function(sequence, nextData){
             return sequence.then(function(current_data){
                 return new Promise(function(resolve_reduce, reject_reduce){
-                	console.log('Singkron DTKS', current_data);
+                	pesan_loading('Get data DTKS '+JSON.stringify(current_data));
                 	backup_data_dtks(0, 300, current_data)
                 	.then(function(){
                 		resolve_reduce(nextData);
@@ -335,6 +335,7 @@ function backup_data_dtks(page=0, per_page=300, options){
 		                		page: page,
 		                		data: current_data
 		                	};
+		                	pesan_loading('kirim data ke lokal '+JSON.stringify(options)+'. Halaman = '+page);
 		                	console.log('kirim data ke lokal', options, current_data);
 							var data = {
 							    message:{
