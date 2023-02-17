@@ -230,13 +230,19 @@ function backup_data_dtks_all(){
 	jQuery('#konfirmasi-desa tbody tr input[type="checkbox"]').map(function(i, b){
 		var checkbox = jQuery(b);
 		if(checkbox.is(':checked')){
-			var tr = checkbox.closest('tr');
-			selected.push({
-				kecamatan: tr.find('td').eq(1).text(),
-				desa_kelurahan: tr.find('td').eq(2).text(),
-				id_kec: checkbox.attr('id_kec'),
-				id_desa: checkbox.val()
-			});
+			var id_kec = checkbox.attr('id_kec');
+			if(
+				id_kec != '' 
+				&& typeof id_kec != 'undefined'
+			){
+				var tr = checkbox.closest('tr');
+				selected.push({
+					kecamatan: tr.find('td').eq(1).text(),
+					desa_kelurahan: tr.find('td').eq(2).text(),
+					id_kec: id_kec,
+					id_desa: checkbox.val()
+				});
+			};
 		}
 	});
 	if(selected.length == 0){
