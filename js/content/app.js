@@ -67,11 +67,94 @@ channel.bind('my-event', function(data) {
 	}
 });
 
+var modal_desa = ''
+  	+'<table class="table table-hover table-striped" id="konfirmasi-desa" style="display: none;">'
+      	+'<thead>'
+        	+'<tr style="background: #8997bd;">'
+          		+'<th class="text-white"><input type="checkbox" id="modal_cek_all"></th>'
+          		+'<th class="text-white" width="300">Kecamatan</th>'
+          		+'<th class="text-white">Desa</th>'
+        	+'</tr>'
+      	+'</thead>'
+      	+'<tbody></tbody>'
+  	+'</table>';
+jQuery('.MuiBox-root.css-1hx2chv').prepend(modal_desa);
+
 var current_url = window.location.href;
-jQuery('.css-nb2z2f>.MuiTypography-root').after('<button id="update-lokal" style="padding: 7px 10px;">UPDATE TOKEN APLIKASI LOKAL</button><button id="backup-dtks" style="padding: 7px 10px; margin-left: 20px;">Backup DTKS ke DB Lokal</button>');
+jQuery('.css-nb2z2f>.MuiTypography-root').after('<button id="update-lokal" style="padding: 7px 10px;">UPDATE TOKEN APLIKASI LOKAL</button><button id="modal-dtks" style="padding: 7px 10px; margin-left: 20px;">Backup DTKS ke DB Lokal</button>');
 jQuery('#update-lokal').on('click', function(e){
 	e.preventDefault();
 	send_token_lokal();
+});
+jQuery('#modal-dtks').on('click', function(e){
+	e.preventDefault();
+	jQuery('#wrap-loading').show();
+    var data = {
+    	"level":"3",
+    	"id_wilayah":_authReducer.profile.kode_kab
+    };
+    var param_encrypt = en(JSON.stringify(data));
+	relayAjax({
+		url: config.api_siks_url+'wilayah/getwilayah',
+		type: 'post',
+		data: {
+			data: param_encrypt
+		},
+		beforeSend: function (xhr) {
+		    xhr.setRequestHeader("Authorization", _token);
+		},
+		success: function(ret){
+			ret = JSON.parse(de(ret));
+			var resolve_all = ret.data.map(function(b, i){
+				return new Promise(function(resolve, reject){
+				    var data = {
+				    	"level":"4",
+				    	"id_wilayah":b.id_wilayah
+				    };
+				    var param_encrypt = en(JSON.stringify(data));
+					relayAjax({
+						url: config.api_siks_url+'wilayah/getwilayah',
+						type: 'post',
+						data: {
+							data: param_encrypt
+						},
+						beforeSend: function (xhr) {
+						    xhr.setRequestHeader("Authorization", _token);
+						},
+						success: function(ret2){
+							ret2 = JSON.parse(de(ret2));
+							resolve({
+								kec: b,
+								desa: ret2.data
+							});
+						}
+					});
+				});
+			});
+			Promise.all(resolve_all)
+			.then(function(data){
+				var body = '';
+				data.map(function(b, i){
+					b.desa.map(function(bb, ii){
+						body += ''
+							+'<tr>'
+								+'<td><input type="checkbox" value="'+bb.id_wilayah+'"></td>'
+								+'<td>'+b.kec.nama_wilayah+'</td>'
+								+'<td>'+bb.nama_wilayah+'</td>'
+							+'</tr>';
+					});
+				});
+				jQuery('#konfirmasi-desa > tbody').html(body);
+				jQuery('#konfirmasi-desa').show();
+				jQuery('#wrap-loading').hide();
+			});
+		}
+	});
+});
+jQuery('#modal_cek_all').on('click', function(){
+	var cek = jQuery(this).is(':checked');
+	jQuery('#konfirmasi-desa tbody tr input[type="checkbox"]').prop('checked', cek);
+	jQuery('#konfirmasi-desa tbody tr input[type="checkbox"][disabled]').prop('checked', false);
 });
 jQuery('#backup-dtks').on('click', function(e){
 	e.preventDefault();

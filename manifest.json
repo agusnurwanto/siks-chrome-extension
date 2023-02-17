@@ -18,8 +18,8 @@
 				"https://*.kemensos.go.id/*"
 			],
 			"css": [
-				"css/content.css",
-				"css/select2.min.css"
+				"css/select2.min.css",
+				"css/content.css"
 			],
 			"js": [
 				"config.js",
