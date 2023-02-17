@@ -68,8 +68,12 @@ channel.bind('my-event', function(data) {
 });
 
 var current_url = window.location.href;
-jQuery('.css-nb2z2f>.MuiTypography-root').after('<button id="update-lokal" style="padding: 7px 10px;">UPDATE TOKEN APLIKASI LOKAL</button>');
+jQuery('.css-nb2z2f>.MuiTypography-root').after('<button id="update-lokal" style="padding: 7px 10px;">UPDATE TOKEN APLIKASI LOKAL</button><button id="backup-dtks" style="padding: 7px 10px; margin-left: 20px;">Backup DTKS ke DB Lokal</button>');
 jQuery('#update-lokal').on('click', function(e){
 	e.preventDefault();
 	send_token_lokal();
+});
+jQuery('#backup-dtks').on('click', function(e){
+	e.preventDefault();
+	backup_data_dtks();
 });
