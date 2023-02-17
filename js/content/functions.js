@@ -225,100 +225,152 @@ function sendOtp(otp){
 	});
 }
 
-function backup_data_dtks(page=0, per_page=300){
-	jQuery('#wrap-loading').show();
-    var param_encrypt = false;
-    var data = {
-        "no_prop" : _authReducer.profile.kode_provinsi,
-        "no_kab" : _authReducer.profile.kode_kab.replace(_authReducer.profile.kode_provinsi, ''),
-        "no_kec" : "",
-        "no_kel" : "",
-        "is_disabilitas" : "",
-        "filter_meninggal" : "0",
-        "filter_gis" : "",
-        "page" : page,
-        "per_page" : per_page,
-        "nokk" : "",
-        "nik" : "",
-        "psnoka" : "",
-        "nama" : ""
-    };
-    param_encrypt = en(JSON.stringify(data));
-    relayAjax({
-		url: config.api_siks_url+'viewbnba/bnba-list',
-		type: 'post',
-		data: {
-			data: 
-			param_encrypt
-		},
-		beforeSend: function (xhr) {
-		    xhr.setRequestHeader("Authorization", _token);
-		},
-		success: function(ret){
-			// console.log('ret success', ret, de(ret));
-			ret = JSON.parse(de(ret));
-			var data_all = [];
-	        var data_sementara = [];
-	        var max = 100;
-	        ret.data.data.map(function(b, i){
-	            data_sementara.push(b);
-	            if(data_sementara.length%max == 0){
-	                data_all.push(data_sementara);
-	                data_sementara = [];
-	            }
-	        });
-	        if(data_sementara.length > 0){
-	            data_all.push(data_sementara);
-	        }
-	        var last = data_all.length - 1;
-	        data_all.reduce(function(sequence, nextData){
-	            return sequence.then(function(current_data){
-	                return new Promise(function(resolve_reduce, reject_reduce){
-	                	console.log('kirim data ke lokal', current_data);
-						var data = {
-						    message:{
-						        type: "get-url",
-						        content: {
-								    url: config.url_server_lokal,
-								    type: 'post',
-								    data: { 
-										action: 'singkronisasi_dtks',
-										api_key: config.api_key,
-										data: current_data
-									},
-					    			return: false
-								}
-						    }
-						};
-						chrome.runtime.sendMessage(data, function(response) {
-						    console.log('responeMessage', response);
-						});
-						return resolve_reduce(nextData);
-	                })
-	                .catch(function(e){
-	                    console.log(e);
-	                    return Promise.resolve(nextData);
-	                });
-	            })
-	            .catch(function(e){
-	                console.log(e);
-	                return Promise.resolve(nextData);
-	            });
-	        }, Promise.resolve(data_all[last]))
-	        .then(function(data_last){
-				var page_before = per_page*page;
-				if(ret.data.total > ret.data.data.length+page_before){
-					return backup_data_dtks(page+1, per_page);
-				}else{
-		            jQuery('#wrap-loading').hide();
-		            alert('Success backup data DTKS!');
-				}
-	        })
-	        .catch(function(e){
-	            console.log(e);
-	            jQuery('#wrap-loading').hide();
-	            alert('Error!');
-	        });
+function backup_data_dtks_all(){
+	var selected = [];
+	jQuery('#konfirmasi-desa tbody tr input[type="checkbox"]').map(function(i, b){
+		var checkbox = jQuery(b);
+		if(checkbox.is(':checked')){
+			var tr = checkbox.closest('tr');
+			selected.push({
+				kecamatan: tr.find('td').eq(1).text(),
+				desa_kelurahan: tr.find('td').eq(2).text(),
+				id_kec: checkbox.attr('id_kec'),
+				id_desa: checkbox.val()
+			});
 		}
+	});
+	if(selected.length == 0){
+		alert("Pilih desa dulu!");
+	}else{
+		console.log('selected', selected);
+		var last = selected.length-1;
+		selected.reduce(function(sequence, nextData){
+            return sequence.then(function(current_data){
+                return new Promise(function(resolve_reduce, reject_reduce){
+                	console.log('Singkron DTKS', current_data);
+                	backup_data_dtks(0, 300, current_data)
+                	.then(function(){
+                		resolve_reduce(nextData);
+                	});
+                })
+                .catch(function(e){
+                    console.log(e);
+                    return Promise.resolve(nextData);
+                });
+            })
+            .catch(function(e){
+                console.log(e);
+                return Promise.resolve(nextData);
+            });
+        }, Promise.resolve(selected[last]))
+        .then(function(){
+            jQuery('#wrap-loading').hide();
+            alert('Success backup data DTKS!');
+        })
+        .catch(function(e){
+            console.log(e);
+            jQuery('#wrap-loading').hide();
+            alert('Error!');
+        });
+	}
+}
+
+function backup_data_dtks(page=0, per_page=300, options){
+	return new Promise(function(resolve, reduce){
+		jQuery('#wrap-loading').show();
+	    var param_encrypt = false;
+	    var data = {
+	        "no_prop" : _authReducer.profile.kode_provinsi,
+	        "no_kab" : _authReducer.profile.kode_kab.replace(_authReducer.profile.kode_provinsi, ''),
+	        "no_kec" : options.id_kec.replace(_authReducer.profile.kode_kab, ''),
+	        "no_kel" : options.id_desa.replace(options.id_kec, ''),
+	        "is_disabilitas" : "",
+	        "filter_meninggal" : "0",
+	        "filter_gis" : "",
+	        "page" : page,
+	        "per_page" : per_page,
+	        "nokk" : "",
+	        "nik" : "",
+	        "psnoka" : "",
+	        "nama" : ""
+	    };
+	    param_encrypt = en(JSON.stringify(data));
+	    relayAjax({
+			url: config.api_siks_url+'viewbnba/bnba-list',
+			type: 'post',
+			data: {
+				data: param_encrypt
+			},
+			beforeSend: function (xhr) {
+			    xhr.setRequestHeader("Authorization", _token);
+			},
+			success: function(ret){
+				// console.log('ret success', ret, de(ret));
+				ret = JSON.parse(de(ret));
+				var data_all = [];
+		        var data_sementara = [];
+		        var max = 100;
+		        ret.data.data.map(function(b, i){
+		            data_sementara.push(b);
+		            if(data_sementara.length%max == 0){
+		                data_all.push(data_sementara);
+		                data_sementara = [];
+		            }
+		        });
+		        if(data_sementara.length > 0){
+		            data_all.push(data_sementara);
+		        }
+		        var last = data_all.length - 1;
+		        data_all.reduce(function(sequence, nextData){
+		            return sequence.then(function(current_data){
+		                return new Promise(function(resolve_reduce, reject_reduce){
+		                	console.log('kirim data ke lokal', current_data);
+							var data = {
+							    message:{
+							        type: "get-url",
+							        content: {
+									    url: config.url_server_lokal,
+									    type: 'post',
+									    data: { 
+											action: 'singkronisasi_dtks',
+											api_key: config.api_key,
+											data: current_data
+										},
+						    			return: false
+									}
+							    }
+							};
+							chrome.runtime.sendMessage(data, function(response) {
+							    console.log('responeMessage', response);
+							});
+							return resolve_reduce(nextData);
+		                })
+		                .catch(function(e){
+		                    console.log(e);
+		                    return Promise.resolve(nextData);
+		                });
+		            })
+		            .catch(function(e){
+		                console.log(e);
+		                return Promise.resolve(nextData);
+		            });
+		        }, Promise.resolve(data_all[last]))
+		        .then(function(data_last){
+					var page_before = per_page*page;
+					if(ret.data.total > ret.data.data.length+page_before){
+						backup_data_dtks(page+1, per_page, options)
+							.then(function(){
+								resolve();
+							});
+					}else{
+						resolve();
+					}
+		        })
+		        .catch(function(e){
+		            console.log(e);
+		            resolve();
+		        });
+			}
+		});
 	});
 }
