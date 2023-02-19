@@ -336,7 +336,6 @@ function backup_data_dtks(page=0, per_page=300, options){
 		                		data: current_data
 		                	};
 		                	pesan_loading('kirim data ke lokal '+JSON.stringify(options)+'. Halaman = '+page);
-		                	console.log('kirim data ke lokal', options, current_data);
 							var data = {
 							    message:{
 							        type: "get-url",
@@ -348,14 +347,16 @@ function backup_data_dtks(page=0, per_page=300, options){
 											api_key: config.api_key,
 											data: current_data2
 										},
-						    			return: false
+						    			return: true
 									}
 							    }
 							};
 							chrome.runtime.sendMessage(data, function(response) {
 							    console.log('responeMessage', response);
 							});
-							return resolve_reduce(nextData);
+							
+							window.continue_dtks = resolve_reduce;
+							window.continue_dtks_next_data = nextData;
 		                })
 		                .catch(function(e){
 		                    console.log(e);

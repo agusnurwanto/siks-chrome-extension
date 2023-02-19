@@ -86,6 +86,10 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 				_token = 'Bearer '+token.data.token;
 				send_token_lokal(true);
 			}
+		}else if(res.action == 'singkronisasi_dtks'){
+			_alert = false;
+			cek_hide_loading = false;
+			continue_dtks(continue_dtks_next_data);
 		}
 		if(cek_hide_loading){
 			hide_loading();
