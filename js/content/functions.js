@@ -135,7 +135,8 @@ function get_token(){
 	        item = JSON.parse(item);
 	        if(item.authReducer){
 		        item = JSON.parse(item.authReducer);
-		        _token = 'Bearer '+item.token;
+		        // _token = 'Bearer '+item.token;
+		        _token = item.token;
 		        _authReducer = item;
 	        }
 	    }
@@ -285,105 +286,148 @@ function backup_data_dtks(page=0, per_page=300, options){
 	return new Promise(function(resolve, reduce){
 		jQuery('#wrap-loading').show();
 	    var param_encrypt = false;
-	    var data = {
-	        "no_prop" : _authReducer.profile.kode_provinsi,
-	        "no_kab" : _authReducer.profile.kode_kab.replace(_authReducer.profile.kode_provinsi, ''),
-	        "no_kec" : options.id_kec.replace(_authReducer.profile.kode_kab, ''),
-	        "no_kel" : options.id_desa.replace(options.id_kec, ''),
-	        "is_disabilitas" : "",
-	        "filter_meninggal" : "0",
-	        "filter_gis" : "",
-	        "page" : page,
-	        "per_page" : per_page,
-	        "nokk" : "",
-	        "nik" : "",
-	        "psnoka" : "",
-	        "nama" : ""
-	    };
+	    if(options.prop_capil){
+	    	var data = {
+			    "no_prop": options.prop_capil,
+			    "no_kab": options.kab_capil,
+			    "no_kec": options.kec_capil,
+			    "no_kel": options.kel_capil,
+			    "is_disabilitas": "",
+			    "filter_meninggal": "0",
+			    "filter_gis": "",
+			    "page": page,
+			    "per_page": per_page,
+			    "nokk": "",
+			    "nik": "",
+			    "psnoka": "",
+			    "nama": "",
+			    "umur_start": "NaN",
+			    "umur_end": "NaN"
+			}
+	    }else{
+		    var data = {
+		        "no_prop" : _authReducer.profile.kode_provinsi,
+		        "no_kab" : _authReducer.profile.kode_kab.replace(_authReducer.profile.kode_provinsi, ''),
+		        "no_kec" : options.id_kec.replace(_authReducer.profile.kode_kab, ''),
+		        "no_kel" : options.id_desa.replace(options.id_kec, ''),
+		        "is_disabilitas" : "",
+		        "filter_meninggal" : "0",
+		        "filter_gis" : "",
+		        "page" : page,
+		        "per_page" : per_page,
+		        "nokk" : "",
+		        "nik" : "",
+		        "psnoka" : "",
+		        "nama" : ""
+		    };
+	    }
 	    param_encrypt = en(JSON.stringify(data));
-	    relayAjax({
-			url: config.api_siks_url+'viewbnba/bnba-list',
-			type: 'post',
-			data: {
-				data: param_encrypt
-			},
-			beforeSend: function (xhr) {
-			    xhr.setRequestHeader("Authorization", _token);
-			},
-			success: function(ret){
-				// console.log('ret success', ret, de(ret));
-				ret = JSON.parse(de(ret));
-				var data_all = [];
-		        var data_sementara = [];
-		        var max = per_page;
-		        ret.data.data.map(function(b, i){
-		            data_sementara.push(b);
-		            if(data_sementara.length%max == 0){
-		                data_all.push(data_sementara);
-		                data_sementara = [];
-		            }
-		        });
-		        if(data_sementara.length > 0){
-		            data_all.push(data_sementara);
-		        }
-		        var last = data_all.length - 1;
-		        data_all.reduce(function(sequence, nextData){
-		            return sequence.then(function(current_data){
-		                return new Promise(function(resolve_reduce, reject_reduce){
-		                	var current_data2 = {
-		                		meta: options,
-		                		page: page,
-		                		data: current_data
-		                	};
-		                	pesan_loading('kirim data ke lokal '+JSON.stringify(options)+'. Halaman = '+page);
-							var data = {
-							    message:{
-							        type: "get-url",
-							        content: {
-									    url: config.url_server_lokal,
-									    type: 'post',
-									    data: { 
-											action: 'singkronisasi_dtks',
-											api_key: config.api_key,
-											data: current_data2
-										},
-						    			return: true
-									}
-							    }
-							};
-							chrome.runtime.sendMessage(data, function(response) {
-							    console.log('responeMessage', response);
-							});
-							
-							window.continue_dtks = resolve_reduce;
-							window.continue_dtks_next_data = nextData;
-		                })
-		                .catch(function(e){
-		                    console.log(e);
-		                    return Promise.resolve(nextData);
-		                });
-		            })
-		            .catch(function(e){
-		                console.log(e);
-		                return Promise.resolve(nextData);
-		            });
-		        }, Promise.resolve(data_all[last]))
-		        .then(function(data_last){
-					var page_before = per_page*page;
-					if(ret.data.total > ret.data.data.length+page_before){
-						backup_data_dtks(page+1, per_page, options)
+
+	    new Promise(function(resolve2, reject2){
+	    	if(page == 0){
+	    		relayAjax({
+					url: config.api_siks_url+'viewbnba/bnba-list-count',
+					type: 'post',
+					data: {
+						data: param_encrypt
+					},
+					beforeSend: function (xhr) {
+					    xhr.setRequestHeader("Authorization", _token);
+					},
+					success: function(ret){
+						ret = JSON.parse(de(ret));
+						options.total = ret.data.total;
+	    				resolve2();
+					}
+				});
+	    	}else{
+	    		resolve2();
+	    	}
+	    }).then(function(){
+		    relayAjax({
+				url: config.api_siks_url+'viewbnba/bnba-list',
+				type: 'post',
+				data: {
+					data: param_encrypt
+				},
+				beforeSend: function (xhr) {
+				    xhr.setRequestHeader("Authorization", _token);
+				},
+				success: function(ret){
+					// console.log('ret success', ret, de(ret));
+					ret = JSON.parse(de(ret));
+					var data_all = [];
+			        var data_sementara = [];
+			        var max = per_page;
+			        ret.data.data.map(function(b, i){
+			            data_sementara.push(b);
+			            if(data_sementara.length%max == 0){
+			                data_all.push(data_sementara);
+			                data_sementara = [];
+			            }
+			        });
+			        if(data_sementara.length > 0){
+			            data_all.push(data_sementara);
+			        }
+			        var last = data_all.length - 1;
+			        data_all.reduce(function(sequence, nextData){
+			            return sequence.then(function(current_data){
+			                return new Promise(function(resolve_reduce, reject_reduce){
+			                	var current_data2 = {
+			                		meta: options,
+			                		page: page,
+			                		data: current_data
+			                	};
+			                	pesan_loading('kirim data ke lokal '+JSON.stringify(options)+'. Halaman = '+page);
+								var data = {
+								    message:{
+								        type: "get-url",
+								        content: {
+										    url: config.url_server_lokal,
+										    type: 'post',
+										    data: { 
+												action: 'singkronisasi_dtks',
+												api_key: config.api_key,
+												data: current_data2
+											},
+							    			return: true
+										}
+								    }
+								};
+								chrome.runtime.sendMessage(data, function(response) {
+								    console.log('responeMessage', response);
+								});
+								
+								window.continue_dtks = resolve_reduce;
+								window.continue_dtks_next_data = nextData;
+			                })
+			                .catch(function(e){
+			                    console.log(e);
+			                    return Promise.resolve(nextData);
+			                });
+			            })
+			            .catch(function(e){
+			                console.log(e);
+			                return Promise.resolve(nextData);
+			            });
+			        }, Promise.resolve(data_all[last]))
+			        .then(function(data_last){
+						var page_before = per_page*page;
+						if(options.total > ret.data.data.length+page_before){
+							backup_data_dtks(page+1, per_page, options)
 							.then(function(){
 								resolve();
 							});
-					}else{
-						resolve();
-					}
-		        })
-		        .catch(function(e){
-		            console.log(e);
-		            resolve();
-		        });
-			}
-		});
+						}else{
+							resolve();
+						}
+			        })
+			        .catch(function(e){
+			            console.log(e);
+			            resolve();
+			        });
+				}
+			});
+	    })
 	});
 }

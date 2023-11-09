@@ -15,6 +15,8 @@ injectScript( chrome.runtime.getURL('/content_message.js'), 'html');
 injectScript( chrome.runtime.getURL('/config.js'), 'html');
 injectScript( chrome.runtime.getURL('/js/jquery.min.js'), 'html');
 injectScript( chrome.runtime.getURL('/js/content/content_inject.js'), 'html');
+injectScript( chrome.runtime.getURL('/js/crypto-js.min.js'), 'html');
+injectScript( chrome.runtime.getURL('/js/content/functions.js'), 'html');
 window.data_temp_onmessage = {};
 
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
