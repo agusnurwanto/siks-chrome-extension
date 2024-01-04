@@ -141,7 +141,7 @@ function get_token(){
 	        }
 	    }
 	}
-	console.log('_token', _token);
+	console.log('_token _authReducer', _token, _authReducer);
 }
 
 function send_token_lokal(hide_alert=false) {
@@ -306,9 +306,9 @@ function backup_data_dtks(page=0, per_page=300, options){
 			}
 	    }else{
 		    var data = {
-		        "no_prop" : _authReducer.profile.kode_provinsi,
-		        "no_kab" : _authReducer.profile.kode_kab.replace(_authReducer.profile.kode_provinsi, ''),
-		        "no_kec" : options.id_kec.replace(_authReducer.profile.kode_kab, ''),
+		        "no_prop" : _authReducer.profile.prop_capil,
+		        "no_kab" : _authReducer.profile.kab_capil,
+		        "no_kec" : options.id_kec.replace(_authReducer.profile.kab_tugas, ''),
 		        "no_kel" : options.id_desa.replace(options.id_kec, ''),
 		        "is_disabilitas" : "",
 		        "filter_meninggal" : "0",

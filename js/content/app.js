@@ -90,10 +90,13 @@ jQuery('#update-lokal').on('click', function(e){
 jQuery('#modal-dtks').on('click', function(e){
 	e.preventDefault();
 	jQuery('#wrap-loading').show();
-	if(_authReducer.profile.kode_kab){
+	if(
+		_authReducer.profile.kec_tugas == ''
+		&& _authReducer.profile.kel_tugas == ''
+	){
 	    var data = {
 	    	"level":"3",
-	    	"id_wilayah":_authReducer.profile.kode_kab
+	    	"id_wilayah":_authReducer.profile.kab_tugas
 	    };
 	    var param_encrypt = en(JSON.stringify(data));
 		relayAjax({
