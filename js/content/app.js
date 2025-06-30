@@ -103,7 +103,7 @@ jQuery('#modal-dtks').on('click', function(e){
 			url: config.api_siks_url+'wilayah/getwilayah',
 			type: 'post',
 			data: {
-				data: param_encrypt
+				entity: param_encrypt
 			},
 			beforeSend: function (xhr) {
 			    xhr.setRequestHeader("Authorization", _token);
@@ -121,7 +121,7 @@ jQuery('#modal-dtks').on('click', function(e){
 							url: config.api_siks_url+'wilayah/getwilayah',
 							type: 'post',
 							data: {
-								data: param_encrypt
+								entity: param_encrypt
 							},
 							beforeSend: function (xhr) {
 							    xhr.setRequestHeader("Authorization", _token);
@@ -157,7 +157,7 @@ jQuery('#modal-dtks').on('click', function(e){
 					});
 					body += ''
 						+'<tr>'
-							+'<td style="text-align: center;" colspan="3"><button id="backup-dtks" style="padding: 7px 10px; background: #f99459;">Proses</button></td>'
+							+'<td style="text-align: center;" colspan="3"><button id="backup-dtks" style="padding: 7px 10px; background: #f99459;">Proses DTKS</button><button id="backup-dtsen" style="padding: 7px 10px; background: #59f998; margin-left: 10px;">Proses DTSEN</button></td>'
 						+'</tr>';
 					jQuery('#konfirmasi-desa > tbody').html(body);
 					jQuery('#konfirmasi-desa').show();
@@ -180,7 +180,7 @@ jQuery('#modal-dtks').on('click', function(e){
 			kel_capil: _authReducer.profile.kel_capil
 		};
 		pesan_loading('Get data DTKS '+JSON.stringify(opsi));
-		backup_data_dtks(0, 300, opsi).then(function(){
+		backup_data_dtks(0, config.per_page, opsi).then(function(){
 			jQuery('#wrap-loading').hide();
             alert('Success backup data DTKS!');
 		});
@@ -198,4 +198,8 @@ jQuery('#konfirmasi-desa').on('click', '.data-kecamatan', function(){
 jQuery('#konfirmasi-desa').on('click', '#backup-dtks', function(e){
 	e.preventDefault();
 	backup_data_dtks_all();
+});
+jQuery('#konfirmasi-desa').on('click', '#backup-dtsen', function(e){
+	e.preventDefault();
+	backup_data_dtsen_all();
 });

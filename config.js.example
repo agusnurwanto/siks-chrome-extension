@@ -4,9 +4,10 @@ var config = {
 	key_encrypt: "xxxx", // key encrypt param data dari siks-ng
 	url_server_lokal : "https://xxxxx.com/wp-admin/admin-ajax.php", // url server lokal
 	api_key : "xxxxxxxx", // api key server lokal
+	token : "xxxxx", // token ajax siks untuk authorization
 	user : "xxx", // username akun https://siks.kemensos.go.id/ | tidak wajib
 	password : "xxx", // password akun https://siks.kemensos.go.id/ | tidak wajib
 	otp : "xxx", // OTP bisa dipakai berkali-kali | tidak wajib
-	pusher_id: "xxxx", // dari https://pusher.com/ | tidak wajib
-	cluster: "xxx" // dari https://pusher.com/ | tidak wajib
+	pusher_id: "", // dari https://pusher.com/ | tidak wajib
+	cluster: "" // dari https://pusher.com/ | tidak wajib
 };

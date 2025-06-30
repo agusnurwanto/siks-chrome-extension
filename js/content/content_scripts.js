@@ -14,8 +14,8 @@ function injectScript(file, node, _type) {
 injectScript( chrome.runtime.getURL('/content_message.js'), 'html');
 injectScript( chrome.runtime.getURL('/config.js'), 'html');
 injectScript( chrome.runtime.getURL('/js/jquery.min.js'), 'html');
-injectScript( chrome.runtime.getURL('/js/content/content_inject.js'), 'html');
 injectScript( chrome.runtime.getURL('/js/crypto-js.min.js'), 'html');
+injectScript( chrome.runtime.getURL('/js/content/content_inject.js'), 'html');
 injectScript( chrome.runtime.getURL('/js/content/functions.js'), 'html');
 window.data_temp_onmessage = {};
 
@@ -92,6 +92,9 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 			_alert = false;
 			cek_hide_loading = false;
 			continue_dtks(continue_dtks_next_data);
+		}else if(res.action == 'singkronisasi_dtsen'){
+			_alert = false;
+			cek_hide_loading = false;
 		}
 		if(cek_hide_loading){
 			hide_loading();
