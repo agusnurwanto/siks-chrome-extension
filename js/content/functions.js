@@ -320,6 +320,7 @@ function backup_data_dtsen_all(){
 		alert("Pilih desa dulu!");
 	}else{
 		console.log('selected', selected);
+		jQuery('#wrap-loading').show();
 		var last = selected.length-1;
 		selected.reduce(function(sequence, nextData){
             return sequence.then(function(current_data){
@@ -518,7 +519,7 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 				    "nokk": "",
 				    "nik": "",
 				    "nama": "",
-				    "desil": ""
+				    "desil": "null"
 				}
 		    }else{
 			    var data = {
@@ -531,7 +532,7 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 				    "nokk": "",
 				    "nik": "",
 				    "nama": "",
-				    "desil": ""
+				    "desil": "null"
 			    };
 		    }
 		    param_encrypt = en(JSON.stringify(data));
@@ -546,24 +547,45 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 				    xhr.setRequestHeader("Authorization", _token);
 				},
 				success: function(ret){
-					ret = JSON.parse(de(ret));
+					ret = JSON.parse(de(ret.data));
 					options.all_keluarga = ret.data;
     				resolve2();
 				}
 			});
 	    }).then(function(){
-	    	return new Promise(function(resolve2, reject2){
-	    		var last = options.all_keluarga.length - 1;
-		        options.all_keluarga.reduce(function(sequence, nextData){
-		            return sequence.then(function(current_data){
-		                return new Promise(function(resolve_reduce, reject_reduce){
-		                	new Promise(function(resolve3, reject3){
+    		var last = options.all_keluarga.length - 1;
+	        options.all_keluarga.reduce(function(sequence, nextData){
+	            return sequence.then(function(current_data){
+	                return new Promise(function(resolve_reduce, reject_reduce){
+	                	new Promise(function(resolve3, reject3){
+		                	param_encrypt = en(JSON.stringify({
+		                		id_keluarga: current_data.id_keluarga
+		                	}));
+		                	// (get anggota keluarga)
+				    		relayAjax({
+								url: config.api_siks_url+'dtsen/individu/v1/get-anggota-keluarga-dtsen-by-id-keluarga',
+								type: 'post',
+								data: {
+									entity: param_encrypt
+								},
+								beforeSend: function (xhr) {
+								    xhr.setRequestHeader("Authorization", _token);
+								},
+								success: function(ret){
+									ret = JSON.parse(de(ret.data));
+									current_data.anggota_keluarga = ret.data;
+				    				resolve3();
+								}
+							});
+						})
+						.then(function(){
+							return new Promise(function(resolve3, reject3){
 			                	param_encrypt = en(JSON.stringify({
 			                		id_keluarga: current_data.id_keluarga
 			                	}));
-			                	// (get anggota keluarga)
+			                	// (get peringkat nasional sampai kab kota keluarga)
 					    		relayAjax({
-									url: config.api_siks_url+'dtsen/individu/v1/get-anggota-keluarga-dtsen-by-id-keluarga',
+									url: config.api_siks_url+'dtsen/individu/v1/get-desil-dtsen-by-id',
 									type: 'post',
 									data: {
 										entity: param_encrypt
@@ -572,113 +594,88 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 									    xhr.setRequestHeader("Authorization", _token);
 									},
 									success: function(ret){
-										ret = JSON.parse(de(ret));
-										current_data.anggota_keluarga = ret.data;
+										ret = JSON.parse(de(ret.data));
+										current_data.peringkat = ret.data;
 					    				resolve3();
 									}
 								});
-							})
-							.then(function(){
-								return new Promise(function(resolve3, reject3){
-				                	param_encrypt = en(JSON.stringify({
-				                		id_keluarga: current_data.id_keluarga
-				                	}));
-				                	// (get peringkat nasional sampai kab kota keluarga)
-						    		relayAjax({
-										url: config.api_siks_url+'dtsen/individu/v1/get-desil-dtsen-by-id',
-										type: 'post',
-										data: {
-											entity: param_encrypt
-										},
-										beforeSend: function (xhr) {
-										    xhr.setRequestHeader("Authorization", _token);
-										},
-										success: function(ret){
-											ret = JSON.parse(de(ret));
-											current_data.peringkat = ret.data;
-						    				resolve3();
-										}
-									});
-								});
-							})
-							.then(function(){
-								return new Promise(function(resolve3, reject3){
-				                	param_encrypt = en(JSON.stringify({
-				                		id_keluarga: current_data.id_keluarga,
-				                		id_wilayah: current_data.id_wilayah
-				                	}));
-				                	// (get detail alamat keluarga)
-						    		relayAjax({
-										url: config.api_siks_url+'dtsen/individu/v1/get-detail-keluarga',
-										type: 'post',
-										data: {
-											entity: param_encrypt
-										},
-										beforeSend: function (xhr) {
-										    xhr.setRequestHeader("Authorization", _token);
-										},
-										success: function(ret){
-											ret = JSON.parse(de(ret));
-											current_data.alamat = ret.data;
-						    				resolve3();
-										}
-									});
-								});
-							})
-							.then(function(){
-								keluarga_new.push(current_data);
-								return resolve_reduce();
 							});
 						})
-		                .catch(function(e){
-		                    console.log(e);
-		                    return Promise.resolve(nextData);
-		                });
-		            })
-		            .catch(function(e){
-		                console.log(e);
-		                return Promise.resolve(nextData);
-		            });
-		        }, Promise.resolve(options.all_keluarga[last]))
-		        .then(function(data_last){
-
-		        });
-		    });
-		}).then(function(){
-			delete options.all_keluarga;
-        	var current_data2 = {
-        		meta: options,
-        		page: page,
-        		data: keluarga_new
-        	};
-        	pesan_loading('kirim data ke lokal '+JSON.stringify(options)+'. Halaman = '+page);
-			var data = {
-			    message:{
-			        type: "get-url",
-			        content: {
-					    url: config.url_server_lokal,
-					    type: 'post',
-					    data: { 
-							action: 'singkronisasi_dtsen',
-							api_key: config.api_key,
-							data: current_data2
-						},
-		    			return: true
-					}
-			    }
-			};
-			chrome.runtime.sendMessage(data, function(response) {
-			    console.log('responeMessage', response);
-			});
-			var page_before = per_page*page;
-			if(options.total > ret.data.data.length+page_before){
-				backup_data_dtsen(page+1, per_page, options)
-				.then(function(){
-					resolve();
+						.then(function(){
+							return new Promise(function(resolve3, reject3){
+			                	param_encrypt = en(JSON.stringify({
+			                		id_keluarga: current_data.id_keluarga,
+			                		id_wilayah: current_data.id_wilayah
+			                	}));
+			                	// (get detail alamat keluarga)
+					    		relayAjax({
+									url: config.api_siks_url+'dtsen/individu/v1/get-detail-keluarga',
+									type: 'post',
+									data: {
+										entity: param_encrypt
+									},
+									beforeSend: function (xhr) {
+									    xhr.setRequestHeader("Authorization", _token);
+									},
+									success: function(ret){
+										ret = JSON.parse(de(ret.data));
+										current_data.alamat = ret.data;
+					    				resolve3();
+									}
+								});
+							});
+						})
+						.then(function(){
+							keluarga_new.push(current_data);
+							return resolve_reduce(nextData);
+						});
+					})
+	                .catch(function(e){
+	                    console.log(e);
+	                    return Promise.resolve(nextData);
+	                });
+	            })
+	            .catch(function(e){
+	                console.log(e);
+	                return Promise.resolve(nextData);
+	            });
+	        }, Promise.resolve(options.all_keluarga[last]))
+	        .then(function(data_last){
+				delete options.all_keluarga;
+	        	var current_data2 = {
+	        		meta: options,
+	        		page: page,
+	        		data: keluarga_new
+	        	};
+	        	pesan_loading('kirim data ke lokal '+JSON.stringify(options)+'. Halaman = '+page);
+				var data = {
+				    message:{
+				        type: "get-url",
+				        content: {
+						    url: config.url_server_lokal,
+						    type: 'post',
+						    data: { 
+								action: 'singkronisasi_dtsen',
+								api_key: config.api_key,
+								data: current_data2
+							},
+			    			return: true
+						}
+				    }
+				};
+				chrome.runtime.sendMessage(data, function(response) {
+				    console.log('responeMessage', response);
 				});
-			}else{
-				resolve();
-			}
-		});
+				var page_before = per_page*page;
+				if(options.total > ret.data.data.length+page_before){
+					backup_data_dtsen(page+1, per_page, options)
+					.then(function(){
+						resolve();
+					});
+				}else{
+					resolve();
+				}
+	        });
+	    });
 	});
 }
