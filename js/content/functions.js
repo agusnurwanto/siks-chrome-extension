@@ -548,6 +548,7 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 				},
 				success: function(ret){
 					ret = JSON.parse(de(ret.data));
+					options.total_data = ret.total_data;
 					options.all_keluarga = ret.data;
     				resolve2();
 				}
@@ -573,7 +574,7 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 								},
 								success: function(ret){
 									ret = JSON.parse(de(ret.data));
-									current_data.anggota_keluarga = ret.data;
+									current_data.anggota_keluarga = ret.data[0];
 				    				resolve3();
 								}
 							});
@@ -667,7 +668,7 @@ function backup_data_dtsen(page=0, per_page=config.per_page, options){
 				    console.log('responeMessage', response);
 				});
 				var page_before = per_page*page;
-				if(options.total > ret.data.data.length+page_before){
+				if(options.total_data > keluarga_new.length+page_before){
 					backup_data_dtsen(page+1, per_page, options)
 					.then(function(){
 						resolve();
